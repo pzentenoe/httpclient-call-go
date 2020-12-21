@@ -8,8 +8,6 @@ This library is used to make http calls to different API services
 
 # Quick Start
 
-## Hello Email
-
 The following is the minimum needed code to call api with httpclient-call-go
 
 ```go
