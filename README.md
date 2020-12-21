@@ -26,7 +26,7 @@ func main() {
 	httpClientCall := client.NewHTTPClientCall(&http.Client{}).Host("https://dummyhost.cl")
 
 	headers := http.Header{
-		HeaderContentType: []string{MIMEApplicationJSON},
+		client.HeaderContentType: []string{client.MIMEApplicationJSON},
 	}
 	dummyBody := make(map[string]interface{})
 	dummyBody["age"] = 30
