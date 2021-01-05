@@ -120,6 +120,8 @@ func (r *HTTPClientCall) Do() (*http.Response, error) {
 	}
 
 	resp, err := r.client.Do((*http.Request)(req).WithContext(context.Background()))
+	r.params = nil
+	r.body = nil
 	return resp, err
 }
 

@@ -18,7 +18,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/pzentenoe/httpclient-call-go"
+	client "github.com/pzentenoe/httpclient-call-go"
 )
 
 func main() {
