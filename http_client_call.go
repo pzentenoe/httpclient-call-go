@@ -22,19 +22,18 @@ type HTTPClientCall struct {
 	contentType  string
 }
 
-func NewHTTPClientCall(client *http.Client) *HTTPClientCall {
+func NewHTTPClientCall(host string, client *http.Client) *HTTPClientCall {
 	if client == nil {
 		panic("You must create client")
 	}
+	if host == "" {
+		panic("empty host")
+	}
 	return &HTTPClientCall{
+		host:        host,
 		client:      client,
 		isEncodeURL: true,
 	}
-}
-
-func (r *HTTPClientCall) Host(host string) *HTTPClientCall {
-	r.host = host
-	return r
 }
 
 func (r *HTTPClientCall) Path(path string) *HTTPClientCall {

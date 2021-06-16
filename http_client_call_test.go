@@ -22,8 +22,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 		params.Set("pageNumber", "1")
 		params.Add("pageSize", "10")
 
-		httpClient := NewHTTPClientCall(server.Client()).
-			Host(server.URL).
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
 			Path("/dummy").
 			Params(params).
 			Method(http.MethodGet)
@@ -54,8 +53,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 			HeaderContentType: []string{MIMEApplicationJSON},
 		}
 
-		httpClient := NewHTTPClientCall(server.Client()).
-			Host(server.URL).
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
 			Path("/dummypath").
 			Method(http.MethodPost).
 			Headers(headers).
@@ -88,8 +86,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 			HeaderContentType: []string{MIMEApplicationJSON},
 		}
 
-		httpClient := NewHTTPClientCall(server.Client()).
-			Host(server.URL).
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
 			Path("/dummypath").
 			Method(http.MethodPut).
 			Headers(headers).
