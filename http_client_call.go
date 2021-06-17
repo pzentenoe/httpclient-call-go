@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+type Doer interface {
+	Do() (*http.Response, error)
+}
+
 type HTTPClientCall struct {
 	client       *http.Client
 	host         string
