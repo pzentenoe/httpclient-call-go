@@ -101,5 +101,71 @@ func TestHTTPClientCall_Do(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, "{}", string(data))
+		assert.Equal(t, false, httpClient.withContentLength)
+	})
+
+	t.Run("when test connection POST with ContentLength returns OK", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			writer.WriteHeader(http.StatusOK)
+			_, _ = writer.Write([]byte("{}"))
+		}))
+		defer server.Close()
+
+		dummyBody := make(map[string]interface{})
+		dummyBody["age"] = 30
+		dummyBody["name"] = "test"
+
+		headers := http.Header{
+			HeaderContentType: []string{MIMEApplicationJSON},
+		}
+
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
+			Path("/dummypath").
+			Method(http.MethodPut).
+			Headers(headers).
+			WithContentLength().
+			Body(dummyBody)
+
+		response, err := httpClient.Do()
+		if err == nil {
+			defer response.Body.Close()
+		}
+
+		data, _ := ioutil.ReadAll(response.Body)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "{}", string(data))
+		assert.Equal(t, true, httpClient.withContentLength)
+	})
+
+	t.Run("when test connection POST without body and ContentLength equals 0 then returns OK", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			writer.WriteHeader(http.StatusOK)
+			_, _ = writer.Write([]byte("{}"))
+		}))
+
+		defer server.Close()
+
+		headers := http.Header{
+			HeaderContentType: []string{MIMEApplicationJSON},
+		}
+
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
+			Path("/dummypath").
+			Method(http.MethodPut).
+			Headers(headers).
+			WithContentLength().
+			Body(nil)
+
+		response, err := httpClient.Do()
+		if err == nil {
+			defer response.Body.Close()
+		}
+
+		data, _ := ioutil.ReadAll(response.Body)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "{}", string(data))
+		assert.Equal(t, true, httpClient.withContentLength)
 	})
 }

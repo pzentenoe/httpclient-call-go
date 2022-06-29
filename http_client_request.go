@@ -106,6 +106,22 @@ func (r *hTTPClientRequest) setBodyReader(body io.Reader) error {
 	return nil
 }
 
+func (r *hTTPClientRequest) setContentLength(body interface{}) error {
+	if body == nil {
+		r.ContentLength = 0
+		return nil
+	}
+
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	bodyLen := len(bodyBytes)
+	r.ContentLength = int64(bodyLen)
+	return nil
+}
+
 func EncodeWithoutScapes(v url.Values) string {
 	if v == nil {
 		return ""

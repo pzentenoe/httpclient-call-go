@@ -14,16 +14,17 @@ type Doer interface {
 }
 
 type HTTPClientCall struct {
-	client       *http.Client
-	host         string
-	path         string
-	params       url.Values
-	isEncodeURL  bool
-	method       string
-	headers      http.Header
-	body         interface{}
-	gzipCompress bool
-	contentType  string
+	client            *http.Client
+	host              string
+	path              string
+	params            url.Values
+	isEncodeURL       bool
+	method            string
+	headers           http.Header
+	body              interface{}
+	gzipCompress      bool
+	contentType       string
+	withContentLength bool
 }
 
 func NewHTTPClientCall(host string, client *http.Client) *HTTPClientCall {
@@ -80,6 +81,11 @@ func (r *HTTPClientCall) ContentType(contentType string) *HTTPClientCall {
 	return r
 }
 
+func (r *HTTPClientCall) WithContentLength() *HTTPClientCall {
+	r.withContentLength = true
+	return r
+}
+
 func (r *HTTPClientCall) Do() (*http.Response, error) {
 	if r.host == "" {
 		return nil, errors.New("empty host")
@@ -113,12 +119,17 @@ func (r *HTTPClientCall) Do() (*http.Response, error) {
 			return nil, err
 		}
 	}
-
 	if len(r.headers) > 0 {
 		for key, value := range r.headers {
 			for _, v := range value {
 				req.Header.Add(key, v)
 			}
+		}
+	}
+	if r.withContentLength {
+		err = req.setContentLength(r.body)
+		if err != nil {
+			return nil, err
 		}
 	}
 
