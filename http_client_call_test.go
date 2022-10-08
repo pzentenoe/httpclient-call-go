@@ -2,7 +2,7 @@ package client
 
 import (
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -33,7 +33,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 			defer response.Body.Close()
 		}
 
-		data, _ := ioutil.ReadAll(response.Body)
+		data, _ := io.ReadAll(response.Body)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "{}", string(data))
@@ -67,7 +67,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 			defer response.Body.Close()
 		}
 
-		data, _ := ioutil.ReadAll(response.Body)
+		data, _ := io.ReadAll(response.Body)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "{}", string(data))
@@ -100,9 +100,40 @@ func TestHTTPClientCall_Do(t *testing.T) {
 			defer response.Body.Close()
 		}
 
-		data, _ := ioutil.ReadAll(response.Body)
+		data, _ := io.ReadAll(response.Body)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "{}", string(data))
+	})
+}
+
+func TestHTTPClientCall_DoWithUnmarshal(t *testing.T) {
+	t.Run("when server response OK", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			writer.WriteHeader(http.StatusOK)
+			_, _ = writer.Write([]byte(`{"name":"Pablo"}`))
+		}))
+		defer server.Close()
+		type testBody struct {
+			Name string `json:"name"`
+		}
+		var testBodyReponse *testBody
+
+		params := url.Values{}
+		params.Set("pageNumber", "1")
+		params.Add("pageSize", "10")
+
+		httpClient := NewHTTPClientCall(server.Client()).
+			Host(server.URL).
+			UseGzipCompress(true).
+			Path("/dummy").
+			Params(params).
+			Method(http.MethodGet)
+
+		response, err := httpClient.DoWithUnmarshal(&testBodyReponse)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "Pablo", testBodyReponse.Name)
+		assert.Equal(t, http.StatusOK, response.StatusCode)
 	})
 }

@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"sort"
@@ -15,7 +14,7 @@ import (
 type hTTPClientRequest http.Request
 
 func newHTTPClientRequest(method, host string) (*hTTPClientRequest, error) {
-	req, err := http.NewRequest(method, host, nil)
+	req, err := http.NewRequest(method, host, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +91,7 @@ func (r *hTTPClientRequest) setBodyString(body string) error {
 func (r *hTTPClientRequest) setBodyReader(body io.Reader) error {
 	rc, ok := body.(io.ReadCloser)
 	if !ok && body != nil {
-		rc = ioutil.NopCloser(body)
+		rc = io.NopCloser(body)
 	}
 	r.Body = rc
 	if body != nil {

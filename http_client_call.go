@@ -2,8 +2,10 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -123,6 +125,32 @@ func (r *HTTPClientCall) Do() (*http.Response, error) {
 	r.params = nil
 	r.body = nil
 	return resp, err
+}
+
+type HTTPClientCallResponse struct {
+	StatusCode int `json:"status_code"`
+}
+
+func (r *HTTPClientCall) DoWithUnmarshal(responseBody any) (*HTTPClientCallResponse, error) {
+	resp, err := r.Do()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, &responseBody)
+	if err != nil {
+		return nil, err
+	}
+	httpClientCallResponse := &HTTPClientCallResponse{
+		StatusCode: resp.StatusCode,
+	}
+	return httpClientCallResponse, nil
 }
 
 func (r *HTTPClientCall) validateHTTPMethod() error {
