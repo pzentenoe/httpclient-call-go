@@ -18,5 +18,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Vendor modules
+        run: go mod vendor
       - name: Run testing
-        run: go test ./...
+        run: go test ./... -mod=vendor
