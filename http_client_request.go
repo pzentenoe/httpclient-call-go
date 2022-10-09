@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"sort"
@@ -14,7 +15,7 @@ import (
 type hTTPClientRequest http.Request
 
 func newHTTPClientRequest(method, host string) (*hTTPClientRequest, error) {
-	req, err := http.NewRequest(method, host, http.NoBody)
+	req, err := http.NewRequest(method, host, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +92,7 @@ func (r *hTTPClientRequest) setBodyString(body string) error {
 func (r *hTTPClientRequest) setBodyReader(body io.Reader) error {
 	rc, ok := body.(io.ReadCloser)
 	if !ok && body != nil {
-		rc = io.NopCloser(body)
+		rc = ioutil.NopCloser(body)
 	}
 	r.Body = rc
 	if body != nil {
@@ -102,6 +103,22 @@ func (r *hTTPClientRequest) setBodyReader(body io.Reader) error {
 			r.ContentLength = int64(v.Len())
 		}
 	}
+	return nil
+}
+
+func (r *hTTPClientRequest) setContentLength(body interface{}) error {
+	if body == nil {
+		r.ContentLength = 0
+		return nil
+	}
+
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	bodyLen := len(bodyBytes)
+	r.ContentLength = int64(bodyLen)
 	return nil
 }
 

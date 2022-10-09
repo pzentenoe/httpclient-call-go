@@ -22,8 +22,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 		params.Set("pageNumber", "1")
 		params.Add("pageSize", "10")
 
-		httpClient := NewHTTPClientCall(server.Client()).
-			Host(server.URL).
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
 			Path("/dummy").
 			Params(params).
 			Method(http.MethodGet)
@@ -54,8 +53,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 			HeaderContentType: []string{MIMEApplicationJSON},
 		}
 
-		httpClient := NewHTTPClientCall(server.Client()).
-			Host(server.URL).
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
 			Path("/dummypath").
 			Method(http.MethodPost).
 			Headers(headers).
@@ -88,8 +86,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 			HeaderContentType: []string{MIMEApplicationJSON},
 		}
 
-		httpClient := NewHTTPClientCall(server.Client()).
-			Host(server.URL).
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
 			Path("/dummypath").
 			Method(http.MethodPut).
 			Headers(headers).
@@ -104,6 +101,72 @@ func TestHTTPClientCall_Do(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, "{}", string(data))
+		assert.Equal(t, false, httpClient.withContentLength)
+	})
+
+	t.Run("when test connection POST with ContentLength returns OK", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			writer.WriteHeader(http.StatusOK)
+			_, _ = writer.Write([]byte("{}"))
+		}))
+		defer server.Close()
+
+		dummyBody := make(map[string]interface{})
+		dummyBody["age"] = 30
+		dummyBody["name"] = "test"
+
+		headers := http.Header{
+			HeaderContentType: []string{MIMEApplicationJSON},
+		}
+
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
+			Path("/dummypath").
+			Method(http.MethodPut).
+			Headers(headers).
+			WithContentLength().
+			Body(dummyBody)
+
+		response, err := httpClient.Do()
+		if err == nil {
+			defer response.Body.Close()
+		}
+
+		data, _ := io.ReadAll(response.Body)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "{}", string(data))
+		assert.Equal(t, true, httpClient.withContentLength)
+	})
+
+	t.Run("when test connection POST without body and ContentLength equals 0 then returns OK", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+			writer.WriteHeader(http.StatusOK)
+			_, _ = writer.Write([]byte("{}"))
+		}))
+
+		defer server.Close()
+
+		headers := http.Header{
+			HeaderContentType: []string{MIMEApplicationJSON},
+		}
+
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
+			Path("/dummypath").
+			Method(http.MethodPut).
+			Headers(headers).
+			WithContentLength().
+			Body(nil)
+
+		response, err := httpClient.Do()
+		if err == nil {
+			defer response.Body.Close()
+		}
+
+		data, _ := io.ReadAll(response.Body)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "{}", string(data))
+		assert.Equal(t, true, httpClient.withContentLength)
 	})
 }
 
@@ -123,8 +186,7 @@ func TestHTTPClientCall_DoWithUnmarshal(t *testing.T) {
 		params.Set("pageNumber", "1")
 		params.Add("pageSize", "10")
 
-		httpClient := NewHTTPClientCall(server.Client()).
-			Host(server.URL).
+		httpClient := NewHTTPClientCall(server.URL, server.Client()).
 			UseGzipCompress(true).
 			Path("/dummy").
 			Params(params).

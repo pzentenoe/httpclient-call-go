@@ -2,41 +2,43 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-type HTTPClientCall struct {
-	client       *http.Client
-	host         string
-	path         string
-	params       url.Values
-	isEncodeURL  bool
-	method       string
-	headers      http.Header
-	body         interface{}
-	gzipCompress bool
-	contentType  string
+type Doer interface {
+	Do() (*http.Response, error)
 }
 
-func NewHTTPClientCall(client *http.Client) *HTTPClientCall {
+type HTTPClientCall struct {
+	client            *http.Client
+	host              string
+	path              string
+	params            url.Values
+	isEncodeURL       bool
+	method            string
+	headers           http.Header
+	body              interface{}
+	gzipCompress      bool
+	contentType       string
+	withContentLength bool
+}
+
+func NewHTTPClientCall(host string, client *http.Client) *HTTPClientCall {
 	if client == nil {
 		panic("You must create client")
 	}
+	if host == "" {
+		panic("empty host")
+	}
 	return &HTTPClientCall{
+		host:        host,
 		client:      client,
 		isEncodeURL: true,
 	}
-}
-
-func (r *HTTPClientCall) Host(host string) *HTTPClientCall {
-	r.host = host
-	return r
 }
 
 func (r *HTTPClientCall) Path(path string) *HTTPClientCall {
@@ -79,6 +81,11 @@ func (r *HTTPClientCall) ContentType(contentType string) *HTTPClientCall {
 	return r
 }
 
+func (r *HTTPClientCall) WithContentLength() *HTTPClientCall {
+	r.withContentLength = true
+	return r
+}
+
 func (r *HTTPClientCall) Do() (*http.Response, error) {
 	if r.host == "" {
 		return nil, errors.New("empty host")
@@ -112,7 +119,6 @@ func (r *HTTPClientCall) Do() (*http.Response, error) {
 			return nil, err
 		}
 	}
-
 	if len(r.headers) > 0 {
 		for key, value := range r.headers {
 			for _, v := range value {
@@ -120,37 +126,17 @@ func (r *HTTPClientCall) Do() (*http.Response, error) {
 			}
 		}
 	}
+	if r.withContentLength {
+		err = req.setContentLength(r.body)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	resp, err := r.client.Do((*http.Request)(req).WithContext(context.Background()))
 	r.params = nil
 	r.body = nil
 	return resp, err
-}
-
-type HTTPClientCallResponse struct {
-	StatusCode int `json:"status_code"`
-}
-
-func (r *HTTPClientCall) DoWithUnmarshal(responseBody any) (*HTTPClientCallResponse, error) {
-	resp, err := r.Do()
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(data, &responseBody)
-	if err != nil {
-		return nil, err
-	}
-	httpClientCallResponse := &HTTPClientCallResponse{
-		StatusCode: resp.StatusCode,
-	}
-	return httpClientCallResponse, nil
 }
 
 func (r *HTTPClientCall) validateHTTPMethod() error {
