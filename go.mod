@@ -1,6 +1,6 @@
 module github.com/pzentenoe/httpclient-call-go
 
-go 1.17
+go 1.19
 
 require github.com/stretchr/testify v1.8.0
 

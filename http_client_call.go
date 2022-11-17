@@ -145,7 +145,7 @@ type HTTPClientCallResponse struct {
 	StatusCode int `json:"status_code"`
 }
 
-func (r *HTTPClientCall) DoWithUnmarshal(responseBody interface{}) (*HTTPClientCallResponse, error) {
+func (r *HTTPClientCall) DoWithUnmarshal(responseBody any) (*HTTPClientCallResponse, error) {
 	resp, err := r.Do()
 	if err != nil {
 		return nil, err
