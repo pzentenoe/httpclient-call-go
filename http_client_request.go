@@ -23,7 +23,7 @@ func newHTTPClientRequest(method, host string) (*hTTPClientRequest, error) {
 	return (*hTTPClientRequest)(req), nil
 }
 
-func (r *hTTPClientRequest) setBody(body interface{}, gzipCompress bool) error {
+func (r *hTTPClientRequest) setBody(body any, gzipCompress bool) error {
 	switch b := body.(type) {
 	case string:
 		if gzipCompress {
@@ -38,7 +38,7 @@ func (r *hTTPClientRequest) setBody(body interface{}, gzipCompress bool) error {
 	}
 }
 
-func (r *hTTPClientRequest) setBodyJSON(data interface{}) error {
+func (r *hTTPClientRequest) setBodyJSON(data any) error {
 	body, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (r *hTTPClientRequest) setBodyJSON(data interface{}) error {
 	return nil
 }
 
-func (r *hTTPClientRequest) setBodyGzip(body interface{}) error {
+func (r *hTTPClientRequest) setBodyGzip(body any) error {
 	switch b := body.(type) {
 	case string:
 		buf := new(bytes.Buffer)
@@ -105,7 +105,7 @@ func (r *hTTPClientRequest) setBodyReader(body io.Reader) error {
 	return nil
 }
 
-func (r *hTTPClientRequest) setContentLength(body interface{}) error {
+func (r *hTTPClientRequest) setContentLength(body any) error {
 	if body == nil {
 		r.ContentLength = 0
 		return nil

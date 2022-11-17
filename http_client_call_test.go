@@ -1,12 +1,13 @@
 package client
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHTTPClientCall_Do(t *testing.T) {
@@ -45,7 +46,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 		}))
 		defer server.Close()
 
-		dummyBody := make(map[string]interface{})
+		dummyBody := make(map[string]any)
 		dummyBody["age"] = 30
 		dummyBody["name"] = "test"
 
@@ -78,7 +79,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 		}))
 		defer server.Close()
 
-		dummyBody := make(map[string]interface{})
+		dummyBody := make(map[string]any)
 		dummyBody["age"] = 30
 		dummyBody["name"] = "test"
 
@@ -111,7 +112,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 		}))
 		defer server.Close()
 
-		dummyBody := make(map[string]interface{})
+		dummyBody := make(map[string]any)
 		dummyBody["age"] = 30
 		dummyBody["name"] = "test"
 

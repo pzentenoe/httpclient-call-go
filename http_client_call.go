@@ -23,7 +23,7 @@ type HTTPClientCall struct {
 	isEncodeURL       bool
 	method            string
 	headers           http.Header
-	body              interface{}
+	body              any
 	gzipCompress      bool
 	contentType       string
 	withContentLength bool
@@ -68,7 +68,7 @@ func (r *HTTPClientCall) Headers(headers http.Header) *HTTPClientCall {
 	return r
 }
 
-func (r *HTTPClientCall) Body(body interface{}) *HTTPClientCall {
+func (r *HTTPClientCall) Body(body any) *HTTPClientCall {
 	r.body = body
 	return r
 }
@@ -145,7 +145,7 @@ type HTTPClientCallResponse struct {
 	StatusCode int `json:"status_code"`
 }
 
-func (r *HTTPClientCall) DoWithUnmarshal(responseBody interface{}) (*HTTPClientCallResponse, error) {
+func (r *HTTPClientCall) DoWithUnmarshal(responseBody any) (*HTTPClientCallResponse, error) {
 	resp, err := r.Do()
 	if err != nil {
 		return nil, err
