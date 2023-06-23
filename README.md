@@ -25,7 +25,7 @@ import (
 
 func main() {
 
-	httpClientCall := client.NewHTTPClientCall(&http.Client{}).Host("https://dummyhost.cl")
+	httpClientCall := client.NewHTTPClientCall("https://dummyhost.cl", &http.Client{})
 
 	headers := http.Header{
 		client.HeaderContentType: []string{client.MIMEApplicationJSON},
@@ -76,7 +76,7 @@ type someBodyResponse struct {
 
 func main() {
 
-	httpClientCall := client.NewHTTPClientCall(&http.Client{}).Host("https://dummyhost.cl")
+	httpClientCall := client.NewHTTPClientCall("https://dummyhost.cl", &http.Client{})
 
 	headers := http.Header{
 		client.HeaderContentType: []string{client.MIMEApplicationJSON},
