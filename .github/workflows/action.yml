@@ -13,11 +13,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Go 1.22
         uses: actions/setup-go@v3
         with:
           go-version: 1.22
-        id: go
 
       - name: Cache Go modules
         uses: actions/cache@v2
@@ -28,6 +28,10 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+
+      # Agregado: Paso para actualizar dependencias con go mod tidy
+      - name: Update dependencies
+        run: go mod tidy
 
       - name: Test
         run: go test ./... -v
