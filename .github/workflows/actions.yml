@@ -33,8 +33,18 @@ jobs:
       - name: Update dependencies
         run: go mod tidy
 
-      - name: Test
-        run: go test ./... -v
+      - name: Test with Coverage
+        run: go test ./... -coverprofile=coverage.txt -covermode=atomic
+
+      - name: Check Coverage
+        run: |
+          go tool cover -func=coverage.txt -o coverage-summary.txt
+          COVERAGE=$(go tool cover -func=coverage.txt | grep total: | awk '{print substr($3, 1, length($3)-1)}')
+          echo "Total test coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 70" |bc -l) )); then
+            echo "Test coverage is below 70%"
+            exit 1
+          fi
         env:
           GO111MODULE: on
 
