@@ -1,104 +1,130 @@
-## httpclient-call-go
+# httpclient-call-go
 
-This library is used to make http calls to different API services
+The `httpclient-call-go` library simplifies making HTTP calls to various API services efficiently and straightforwardly. It is designed to seamlessly integrate into any Go project requiring HTTP API interactions.
 
-## Install Package
 
-`go get github.com/pzentenoe/httpclient-call-go`
+### Buy Me a Coffee
 
-# Quick Start
 
-The following is the minimum needed code to call api with httpclient-call-go
+<a href="https://www.buymeacoffee.com/pzentenoe" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
-### Using Do Implementation
+Thank you for your support! ❤️
 
+## Features
+
+- Easy HTTP client configuration.
+- Full support for customizing HTTP requests (headers, body, timeouts).
+- Convenient methods for making HTTP calls and deserializing JSON responses.
+
+
+## Installation
+
+To use `httpclient-call-go` in your project, install it using the following Go command:
+
+```bash
+go get github.com/pzentenoe/httpclient-call-go
+```
+## Quick Start
+### Setting Up HTTP Client
+First, import the library and create a new instance of HTTPClientCall specifying the base URL of the API service and an HTTP client:
+```go
+import (
+    "net/http"
+    client "github.com/pzentenoe/httpclient-call-go"
+)
+
+httpClientCall := client.NewHTTPClientCall("https://dummyhost.cl", &http.Client{})
+```
+## Making an HTTP Call
+Using **Do** Implementation
+
+To perform a simple POST request and handle the response as []byte:
 ```go
 package main
 
 import (
-	"fmt"
-	"io"
-	"net/http"
-
-	client "github.com/pzentenoe/httpclient-call-go"
+    "context"
+    "fmt"
+    "io"
+    "net/http"
+    "time"
+    client "github.com/pzentenoe/httpclient-call-go"
 )
 
 func main() {
+    httpClientCall := client.NewHTTPClientCall("https://dummyhost.cl", &http.Client{})
+    headers := http.Header{
+        client.HeaderContentType: []string{client.MIMEApplicationJSON},
+    }
+    dummyBody := map[string]interface{}{"age": 30, "name": "test"}
 
-	httpClientCall := client.NewHTTPClientCall("https://dummyhost.cl", &http.Client{})
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
 
-	headers := http.Header{
-		client.HeaderContentType: []string{client.MIMEApplicationJSON},
-	}
-	dummyBody := make(map[string]interface{})
-	dummyBody["age"] = 30
-	dummyBody["name"] = "test"
-
-	response, err := httpClientCall.
+    response, err := httpClientCall.
 		Method(http.MethodPost).
 		Path("/path").
-		Body(dummyBody).
+        Body(dummyBody).
 		Headers(headers).
-		Do()
+		Do(ctx)
+    if err != nil {
+        fmt.Println("Error calling the API:", err)
+        return
+    }
+    defer response.Body.Close()
 
-	if err != nil {
-		fmt.Println("Error to call api")
-		return
-	}
-	//Close body response 
-	defer response.Body.Close()
-
-	datBytes, errToRead := io.ReadAll(response.Body)
-	if errToRead != nil {
-		fmt.Println("Error to read data")
-		return
-	}
-	fmt.Println(string(datBytes))
-
+    dataBytes, errToRead := io.ReadAll(response.Body)
+    if errToRead != nil {
+        fmt.Println("Error reading data:", errToRead)
+        return
+    }
+    fmt.Println(string(dataBytes))
 }
 ```
+Using **DoWithUnmarshal** Implementation
 
-### Using DoWithUnmarshal Implementation
-
+To perform a POST request and automatically deserialize the JSON response into a Go structure:
 ```go
 package main
 
 import (
-	"fmt"
-	http "net/http"
-
-	client "github.com/pzentenoe/httpclient-call-go"
+    "context"
+    "fmt"
+    "net/http"
+    "time"
+    client "github.com/pzentenoe/httpclient-call-go"
 )
 
 type someBodyResponse struct {
-	Name string `json:"name"`
+    Name string `json:"name"`
 }
 
 func main() {
+    httpClientCall := client.NewHTTPClientCall("https://dummyhost.cl", &http.Client{})
+    headers := http.Header{
+        client.HeaderContentType: []string{client.MIMEApplicationJSON},
+    }
+    dummyBody := map[string]interface{}{"age": 30, "name": "test"}
 
-	httpClientCall := client.NewHTTPClientCall("https://dummyhost.cl", &http.Client{})
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
 
-	headers := http.Header{
-		client.HeaderContentType: []string{client.MIMEApplicationJSON},
-	}
-	dummyBody := make(map[string]interface{})
-	dummyBody["age"] = 30
-	dummyBody["name"] = "test"
-
-	var responseBody *someBodyResponse
-	resp, err := httpClientCall.
+    var responseBody someBodyResponse
+    resp, err := httpClientCall.
 		Method(http.MethodPost).
 		Path("/path").
-		Body(dummyBody).
+        Body(dummyBody).
 		Headers(headers).
-		DoWithUnmarshal(&responseBody)
-
-	if err != nil {
-		fmt.Println("Error to call api")
-		return
-	}
-	fmt.Println(resp.StatusCode)
-	fmt.Println(responseBody.Name)
-
+		DoWithUnmarshal(ctx, &responseBody)
+    if err != nil {
+        fmt.Println("Error calling the API:", err)
+        return
+    }
+    fmt.Println("Status Code:", resp.StatusCode)
+    fmt.Println("Name in Response:", responseBody.Name)
 }
 ```
+
+## Autor
+
+- **Pablo Zenteno** - _Full Stack Developer_ - [pzentenoe](https://github.com/pzentenoe)

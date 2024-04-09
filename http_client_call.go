@@ -4,29 +4,31 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
-type Doer interface {
+const (
+	ErrEmptyHost        = "empty host"
+	ErrEmptyMethod      = "empty method"
+	ErrMethodNotAllowed = "method not allowed"
+)
+
+type HttpClientDoer interface {
 	Do() (*http.Response, error)
 }
 
 type HTTPClientCall struct {
-	client            *http.Client
-	host              string
-	path              string
-	params            url.Values
-	isEncodeURL       bool
-	method            string
-	headers           http.Header
-	body              any
-	gzipCompress      bool
-	contentType       string
-	withContentLength bool
+	client       *http.Client
+	method       string
+	host         string
+	path         string
+	params       url.Values
+	headers      http.Header
+	body         any
+	isEncodeURL  bool
+	gzipCompress bool
 }
 
 func NewHTTPClientCall(host string, client *http.Client) *HTTPClientCall {
@@ -37,9 +39,15 @@ func NewHTTPClientCall(host string, client *http.Client) *HTTPClientCall {
 		panic("empty host")
 	}
 	return &HTTPClientCall{
-		host:        host,
-		client:      client,
-		isEncodeURL: true,
+		client:       client,
+		host:         host,
+		path:         "",
+		params:       nil,
+		isEncodeURL:  true,
+		method:       "",
+		headers:      nil,
+		body:         nil,
+		gzipCompress: false,
 	}
 }
 
@@ -78,64 +86,26 @@ func (r *HTTPClientCall) UseGzipCompress(gzipCompress bool) *HTTPClientCall {
 	return r
 }
 
-func (r *HTTPClientCall) ContentType(contentType string) *HTTPClientCall {
-	r.contentType = contentType
-	return r
-}
-
-func (r *HTTPClientCall) WithContentLength() *HTTPClientCall {
-	r.withContentLength = true
-	return r
-}
-
-func (r *HTTPClientCall) Do() (*http.Response, error) {
+func (r *HTTPClientCall) Do(ctx context.Context) (*http.Response, error) {
 	if r.host == "" {
-		return nil, errors.New("empty host")
+		return nil, errors.New(ErrEmptyHost)
 	}
 
 	if err := r.validateHTTPMethod(); err != nil {
 		return nil, err
 	}
-
-	pathWithParams := r.path
-	if len(r.params) > 0 {
-		if r.isEncodeURL {
-			pathWithParams += "?" + r.params.Encode()
-		} else {
-			pathWithParams += "?" + EncodeWithoutScapes(r.params)
-			pathWithParams = strings.ReplaceAll(pathWithParams, " ", "+")
-		}
-	}
-
-	req, err := newHTTPClientRequest(r.method, fmt.Sprintf("%s%s", r.host, pathWithParams))
+	fullURL := r.constructURL()
+	req, err := newClientRequest(ctx, r.method, fullURL)
 	if err != nil {
 		return nil, err
 	}
 
-	if r.contentType != "" {
-		req.Header.Set(HeaderContentType, r.contentType)
+	if err = r.setRequestBody(req); err != nil {
+		return nil, err
 	}
-	if r.body != nil {
-		err = req.setBody(r.body, r.gzipCompress)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if len(r.headers) > 0 {
-		for key, value := range r.headers {
-			for _, v := range value {
-				req.Header.Add(key, v)
-			}
-		}
-	}
-	if r.withContentLength {
-		err = req.setContentLength(r.body)
-		if err != nil {
-			return nil, err
-		}
-	}
+	r.setHeaders(req)
 
-	resp, err := r.client.Do((*http.Request)(req).WithContext(context.Background()))
+	resp, err := r.client.Do(req)
 	r.params = nil
 	r.body = nil
 	return resp, err
@@ -145,8 +115,8 @@ type HTTPClientCallResponse struct {
 	StatusCode int `json:"status_code"`
 }
 
-func (r *HTTPClientCall) DoWithUnmarshal(responseBody any) (*HTTPClientCallResponse, error) {
-	resp, err := r.Do()
+func (r *HTTPClientCall) DoWithUnmarshal(ctx context.Context, responseBody any) (*HTTPClientCallResponse, error) {
+	resp, err := r.Do(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -169,12 +139,12 @@ func (r *HTTPClientCall) DoWithUnmarshal(responseBody any) (*HTTPClientCallRespo
 
 func (r *HTTPClientCall) validateHTTPMethod() error {
 	if r.method == "" {
-		return errors.New("empty Method")
+		return errors.New(ErrEmptyMethod)
 	}
 	switch r.method {
 	case http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodPatch:
 		return nil
 	default:
-		return errors.New("method not allowed")
+		return errors.New(ErrMethodNotAllowed)
 	}
 }

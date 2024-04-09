@@ -1,6 +1,8 @@
 package client
 
 import (
+	"context"
+	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,71 +14,64 @@ import (
 
 func TestHTTPClientCall_Do(t *testing.T) {
 
-	t.Run("when test connection GET is OK", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			writer.WriteHeader(http.StatusOK)
-			_, _ = writer.Write([]byte("{}"))
-		}))
-		defer server.Close()
+	t.Run("", func(t *testing.T) {
+		client := &http.Client{}
+		host := "http://example.com"
 
-		params := url.Values{}
-		params.Set("pageNumber", "1")
-		params.Add("pageSize", "10")
+		call := NewHTTPClientCall(host, client)
 
-		httpClient := NewHTTPClientCall(server.URL, server.Client()).
-			Path("/dummy").
-			Params(params).
-			Method(http.MethodGet)
-
-		response, err := httpClient.Do()
-		if err == nil {
-			defer response.Body.Close()
-		}
-
-		data, _ := io.ReadAll(response.Body)
-
-		assert.NoError(t, err)
-		assert.Equal(t, "{}", string(data))
+		require.NotNil(t, call, "The HTTPClientCall instance should not be nil")
+		assert.Equal(t, host, call.host, "The host should match the input")
 	})
 
-	t.Run("when test connection POST with gzip compress return 201", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			writer.WriteHeader(http.StatusCreated)
-			_, _ = writer.Write([]byte("{}"))
-		}))
+	t.Run("when method is not allowed", func(t *testing.T) {
+		call := NewHTTPClientCall("http://example.com", &http.Client{})
+		call.Method("INVALID")
+
+		resp, err := call.Do(context.Background())
+
+		assert.Nil(t, resp, "Expected no response for an invalid method")
+		assert.Error(t, err, "Expected an error for an invalid method")
+		assert.EqualError(t, err, ErrMethodNotAllowed, "Error should indicate method not allowed")
+	})
+
+	t.Run("when do Get is Success", func(t *testing.T) {
+		handler := newHandlerFunc(http.StatusOK, nil)
+		server := httptest.NewServer(handler)
 		defer server.Close()
 
-		dummyBody := make(map[string]any)
-		dummyBody["age"] = 30
-		dummyBody["name"] = "test"
+		client := server.Client()
+		call := NewHTTPClientCall(server.URL, client).
+			Method(http.MethodGet)
 
-		headers := http.Header{
-			HeaderContentType: []string{MIMEApplicationJSON},
-		}
+		resp, err := call.Do(context.Background())
 
-		httpClient := NewHTTPClientCall(server.URL, server.Client()).
-			Path("/dummypath").
+		require.NoError(t, err, "Expected no error for a successful request")
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "Expected HTTP 200 OK status")
+	})
+
+	t.Run("when DoWithGzipCompression", func(t *testing.T) {
+		expectedBody := "test body"
+		handler := newHandlerFunc(http.StatusOK, []byte("test body"))
+		server := httptest.NewServer(handler)
+		defer server.Close()
+
+		client := server.Client()
+		call := NewHTTPClientCall(server.URL, client).
 			Method(http.MethodPost).
-			Headers(headers).
-			Body(dummyBody).
-			UseGzipCompress(true)
+			UseGzipCompress(true).
+			Body(expectedBody)
 
-		response, err := httpClient.Do()
-		if err == nil {
-			defer response.Body.Close()
-		}
+		resp, err := call.Do(context.Background())
 
-		data, _ := io.ReadAll(response.Body)
-
-		assert.NoError(t, err)
-		assert.Equal(t, "{}", string(data))
+		require.NoError(t, err, "Expected no error for a successful request with gzip compression")
+		assert.Equal(t, http.StatusOK, resp.StatusCode, "Expected HTTP 200 OK status")
 	})
 
 	t.Run("when test connection POST return  OK", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			writer.WriteHeader(http.StatusCreated)
-			_, _ = writer.Write([]byte("{}"))
-		}))
+		ctx := context.Background()
+		handler := newHandlerFunc(http.StatusCreated, []byte("{}"))
+		server := httptest.NewServer(handler)
 		defer server.Close()
 
 		dummyBody := make(map[string]any)
@@ -93,23 +88,24 @@ func TestHTTPClientCall_Do(t *testing.T) {
 			Headers(headers).
 			Body(dummyBody)
 
-		response, err := httpClient.Do()
+		response, err := httpClient.Do(ctx)
 		if err == nil {
-			defer response.Body.Close()
+			defer func() {
+				_ = response.Body.Close()
+			}()
 		}
 
 		data, _ := io.ReadAll(response.Body)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "{}", string(data))
-		assert.Equal(t, false, httpClient.withContentLength)
 	})
 
 	t.Run("when test connection POST with ContentLength returns OK", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			writer.WriteHeader(http.StatusOK)
-			_, _ = writer.Write([]byte("{}"))
-		}))
+		ctx := context.Background()
+		handler := newHandlerFunc(http.StatusCreated, []byte("{}"))
+		server := httptest.NewServer(handler)
+
 		defer server.Close()
 
 		dummyBody := make(map[string]any)
@@ -124,10 +120,9 @@ func TestHTTPClientCall_Do(t *testing.T) {
 			Path("/dummypath").
 			Method(http.MethodPut).
 			Headers(headers).
-			WithContentLength().
 			Body(dummyBody)
 
-		response, err := httpClient.Do()
+		response, err := httpClient.Do(ctx)
 		if err == nil {
 			defer response.Body.Close()
 		}
@@ -136,14 +131,12 @@ func TestHTTPClientCall_Do(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, "{}", string(data))
-		assert.Equal(t, true, httpClient.withContentLength)
 	})
 
 	t.Run("when test connection POST without body and ContentLength equals 0 then returns OK", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			writer.WriteHeader(http.StatusOK)
-			_, _ = writer.Write([]byte("{}"))
-		}))
+		ctx := context.Background()
+		handler := newHandlerFunc(http.StatusCreated, []byte("{}"))
+		server := httptest.NewServer(handler)
 
 		defer server.Close()
 
@@ -155,10 +148,9 @@ func TestHTTPClientCall_Do(t *testing.T) {
 			Path("/dummypath").
 			Method(http.MethodPut).
 			Headers(headers).
-			WithContentLength().
 			Body(nil)
 
-		response, err := httpClient.Do()
+		response, err := httpClient.Do(ctx)
 		if err == nil {
 			defer response.Body.Close()
 		}
@@ -167,20 +159,21 @@ func TestHTTPClientCall_Do(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, "{}", string(data))
-		assert.Equal(t, true, httpClient.withContentLength)
 	})
 }
 
 func TestHTTPClientCall_DoWithUnmarshal(t *testing.T) {
 	t.Run("when server response OK", func(t *testing.T) {
-		server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-			writer.WriteHeader(http.StatusOK)
-			_, _ = writer.Write([]byte(`{"name":"Pablo"}`))
-		}))
+		ctx := context.Background()
+		handler := newHandlerFunc(http.StatusCreated, []byte(`{"name":"Pablo"}`))
+		server := httptest.NewServer(handler)
+
 		defer server.Close()
+
 		type testBody struct {
 			Name string `json:"name"`
 		}
+
 		var testBodyReponse *testBody
 
 		params := url.Values{}
@@ -193,10 +186,17 @@ func TestHTTPClientCall_DoWithUnmarshal(t *testing.T) {
 			Params(params).
 			Method(http.MethodGet)
 
-		response, err := httpClient.DoWithUnmarshal(&testBodyReponse)
+		response, err := httpClient.DoWithUnmarshal(ctx, &testBodyReponse)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "Pablo", testBodyReponse.Name)
-		assert.Equal(t, http.StatusOK, response.StatusCode)
+		assert.Equal(t, http.StatusCreated, response.StatusCode)
 	})
+}
+
+func newHandlerFunc(statusCode int, body []byte) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		writer.WriteHeader(statusCode)
+		_, _ = writer.Write(body)
+	}
 }
