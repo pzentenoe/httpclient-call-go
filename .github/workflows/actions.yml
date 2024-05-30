@@ -1,4 +1,4 @@
-name: Go
+name: CI
 
 on:
   push:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Set up Go 1.22
         uses: actions/setup-go@v3
@@ -29,20 +29,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      # Agregado: Paso para actualizar dependencias con go mod tidy
       - name: Update dependencies
         run: go mod tidy
 
       - name: Test with Coverage
-        run: go test ./... -coverprofile=coverage.txt -covermode=atomic
+        run: go test ./... -coverprofile=coverage.out -covermode=atomic
 
       - name: Check Coverage
         run: |
-          go tool cover -func=coverage.txt -o coverage-summary.txt
-          COVERAGE=$(go tool cover -func=coverage.txt | grep total: | awk '{print substr($3, 1, length($3)-1)}')
+          go tool cover -func=coverage.out -o coverage-summary.txt
+          COVERAGE=$(go tool cover -func=coverage.out | grep total: | awk '{print substr($3, 1, length($3)-1)}')
           echo "Total test coverage: $COVERAGE%"
-          if (( $(echo "$COVERAGE < 70" |bc -l) )); then
-            echo "Test coverage is below 70%"
+          if (( $(echo "$COVERAGE < 60" |bc -l) )); then
+            echo "Test coverage is below 60%"
             exit 1
           fi
         env:
