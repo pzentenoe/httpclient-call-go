@@ -55,3 +55,19 @@ jobs:
         run: golangci-lint run ./...
         env:
           GO111MODULE: on
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v2.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=httpclient-call-go
+            -Dsonar.sources=.
+            -Dsonar.go.coverage.reportPaths=coverage.out
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+            -Dsonar.qualitygate.status=ERROR
+            -Dsonar.qualitygate.stop=true
+            -Dsonar.qualitygate.failIfNoQualityGate=true
