@@ -6,9 +6,9 @@ The `httpclient-call-go` library simplifies making HTTP calls to various API ser
 It is designed to seamlessly integrate into any Go project requiring HTTP API interactions.
 
 ![CI](https://github.com/pzentenoe/httpclient-call-go/actions/workflows/actions.yml/badge.svg)
-![Quality Gate](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=alert_status&token=sqb_59bbc1298f38ee74664e3ca59a49e1550b32b599)
-![Coverage](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=coverage&token=sqb_59bbc1298f38ee74664e3ca59a49e1550b32b599)
-![Bugs](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=bugs&token=sqb_59bbc1298f38ee74664e3ca59a49e1550b32b599)
+![Quality Gate](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=alert_status&token=sqb_28f943efa72bc60b8e1c5447065df406ec45ef08)
+![Coverage](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=coverage&token=sqb_28f943efa72bc60b8e1c5447065df406ec45ef08)
+![Bugs](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=bugs&token=sqb_28f943efa72bc60b8e1c5447065df406ec45ef08)
 
 ### Buy Me a Coffee
 
@@ -158,5 +158,5 @@ This project is released under the MIT License. See the [LICENSE](LICENSE) file 
 ## Changelog
 For a detailed changelog, refer to [CHANGELOG.md](CHANGELOG.md).
 
-## Author
+## Autor
 - **Pablo Zenteno** - _Full Stack Developer_ - [pzentenoe](https://github.com/pzentenoe)
