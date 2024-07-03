@@ -6,6 +6,9 @@ The `httpclient-call-go` library simplifies making HTTP calls to various API ser
 It is designed to seamlessly integrate into any Go project requiring HTTP API interactions.
 
 ![CI](https://github.com/pzentenoe/httpclient-call-go/actions/workflows/actions.yml/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/pzentenoe/httpclient-call-go)](https://goreportcard.com/report/github.com/pzentenoe/httpclient-call-go)
+![License](https://img.shields.io/github/license/pzentenoe/httpclient-call-go.svg)
+![GitHub issues](https://img.shields.io/github/issues/pzentenoe/httpclient-call-go.svg)
 ![Quality Gate](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=alert_status&token=sqb_28f943efa72bc60b8e1c5447065df406ec45ef08)
 ![Coverage](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=coverage&token=sqb_28f943efa72bc60b8e1c5447065df406ec45ef08)
 ![Bugs](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=bugs&token=sqb_28f943efa72bc60b8e1c5447065df406ec45ef08)
@@ -39,8 +42,8 @@ HTTP client:
 
 ```go
 import (
-"net/http"
-client "github.com/pzentenoe/httpclient-call-go"
+    "net/http"
+    client "github.com/pzentenoe/httpclient-call-go"
 )
 
 httpClientCall := client.NewHTTPClientCall("https://dummyhost.cl", &http.Client{})
@@ -107,6 +110,7 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
 	client "github.com/pzentenoe/httpclient-call-go"
 )
 
