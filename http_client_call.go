@@ -2,9 +2,8 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"io"
+	"fmt"
 	"net/http"
 	"net/url"
 )
@@ -18,12 +17,12 @@ const (
 
 // HTTPClientDoer is an interface for executing an HTTP request.
 type HTTPClientDoer interface {
-	Do() (*http.Response, error)
+	Do(*http.Request) (*http.Response, error)
 }
 
 // HTTPClientCall encapsulates the configuration and execution of an HTTP request.
 type HTTPClientCall struct {
-	client       *http.Client
+	client       HTTPClientDoer
 	method       string
 	host         string
 	path         string
@@ -35,7 +34,7 @@ type HTTPClientCall struct {
 }
 
 // NewHTTPClientCall creates a new HTTPClientCall with the specified host and HTTP client.
-func NewHTTPClientCall(host string, client *http.Client) *HTTPClientCall {
+func NewHTTPClientCall(host string, client HTTPClientDoer) *HTTPClientCall {
 	if client == nil {
 		panic("You must create client")
 	}
@@ -137,14 +136,18 @@ func (r *HTTPClientCall) DoWithUnmarshal(ctx context.Context, responseBody any) 
 	defer func() {
 		_ = resp.Body.Close()
 	}()
-	data, err := io.ReadAll(resp.Body)
+
+	contentType := resp.Header.Get("Content-Type")
+	decoder := selectDecoder(contentType)
+	if decoder == nil {
+		return nil, fmt.Errorf("unsupported content type: %s", contentType)
+	}
+
+	err = decoder.Decode(resp.Body, responseBody)
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(data, &responseBody)
-	if err != nil {
-		return nil, err
-	}
+
 	httpClientCallResponse := &HTTPClientCallResponse{
 		StatusCode: resp.StatusCode,
 	}

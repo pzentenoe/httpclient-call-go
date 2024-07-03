@@ -1,5 +1,7 @@
 package client
 
+import "net/http"
+
 // Headers
 const (
 	HeaderAccept              = "Accept"
@@ -50,3 +52,12 @@ const (
 	HeaderXCSRFToken                      = "X-CSRF-Token"
 	HeaderReferrerPolicy                  = "Referrer-Policy"
 )
+
+// setHeaders sets the headers for the HTTP request.
+func (r *HTTPClientCall) setHeaders(req *http.Request) {
+	for key, values := range r.headers {
+		for _, value := range values {
+			req.Header.Add(key, value)
+		}
+	}
+}

@@ -41,15 +41,6 @@ func (r *HTTPClientCall) constructURLPath() string {
 	return pathWithParams
 }
 
-// setHeaders sets the headers for the HTTP request.
-func (r *HTTPClientCall) setHeaders(req *http.Request) {
-	for key, values := range r.headers {
-		for _, value := range values {
-			req.Header.Add(key, value)
-		}
-	}
-}
-
 // setRequestBody sets the body for the HTTP request. If gzipCompress is true, the body is gzip compressed.
 func (r *HTTPClientCall) setRequestBody(req *http.Request) error {
 	if r.body == nil {
