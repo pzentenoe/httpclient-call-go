@@ -65,6 +65,7 @@ jobs:
             -Dsonar.projectKey=httpclient-call-go
             -Dsonar.sources=.
             -Dsonar.go.coverage.reportPaths=coverage.out
+            -Dsonar.exclusions=**/*_test.go,**/main.go
             -Dsonar.qualitygate.wait=true
             -Dsonar.qualitygate.timeout=300
             -Dsonar.qualitygate.status=ERROR
