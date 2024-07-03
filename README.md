@@ -158,5 +158,5 @@ This project is released under the MIT License. See the [LICENSE](LICENSE) file 
 ## Changelog
 For a detailed changelog, refer to [CHANGELOG.md](CHANGELOG.md).
 
-## Autor
+## Author
 - **Pablo Zenteno** - _Full Stack Developer_ - [pzentenoe](https://github.com/pzentenoe)

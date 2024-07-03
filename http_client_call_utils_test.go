@@ -1,9 +1,10 @@
 package client
 
 import (
-	"github.com/stretchr/testify/assert"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHTTPClientCall_constructURLPath(t *testing.T) {

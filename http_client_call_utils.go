@@ -13,6 +13,7 @@ import (
 	"strings"
 )
 
+// newClientRequest creates a new HTTP request with the specified method and host, and associates it with the provided context.
 func newClientRequest(ctx context.Context, method, host string) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, method, host, nil)
 	if err != nil {
@@ -21,10 +22,12 @@ func newClientRequest(ctx context.Context, method, host string) (*http.Request, 
 	return req, nil
 }
 
+// constructURL constructs the full URL for the HTTP request based on the host and path.
 func (r *HTTPClientCall) constructURL() string {
 	return fmt.Sprintf("%s%s", r.host, r.constructURLPath())
 }
 
+// constructURLPath constructs the URL path including the query parameters.
 func (r *HTTPClientCall) constructURLPath() string {
 	pathWithParams := r.path
 	if len(r.params) > 0 {
@@ -38,6 +41,7 @@ func (r *HTTPClientCall) constructURLPath() string {
 	return pathWithParams
 }
 
+// setHeaders sets the headers for the HTTP request.
 func (r *HTTPClientCall) setHeaders(req *http.Request) {
 	for key, values := range r.headers {
 		for _, value := range values {
@@ -46,6 +50,7 @@ func (r *HTTPClientCall) setHeaders(req *http.Request) {
 	}
 }
 
+// setRequestBody sets the body for the HTTP request. If gzipCompress is true, the body is gzip compressed.
 func (r *HTTPClientCall) setRequestBody(req *http.Request) error {
 	if r.body == nil {
 		req.ContentLength = 0
@@ -77,6 +82,7 @@ func (r *HTTPClientCall) setRequestBody(req *http.Request) error {
 	return nil
 }
 
+// EncodeWithoutScapes encodes the URL values without escaping special characters.
 func EncodeWithoutScapes(v url.Values) string {
 	if v == nil {
 		return ""

@@ -2,12 +2,13 @@ package client
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -32,7 +33,7 @@ func TestHTTPClientCall_Do(t *testing.T) {
 
 		assert.Nil(t, resp, "Expected no response for an invalid method")
 		assert.Error(t, err, "Expected an error for an invalid method")
-		assert.EqualError(t, err, ErrMethodNotAllowed, "Error should indicate method not allowed")
+		assert.EqualError(t, err, errorMethodNotAllowed, "Error should indicate method not allowed")
 	})
 
 	t.Run("when do Get is Success", func(t *testing.T) {
