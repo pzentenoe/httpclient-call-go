@@ -10,9 +10,9 @@ It is designed to seamlessly integrate into any Go project requiring HTTP API in
 [![Go Report Card](https://goreportcard.com/badge/github.com/pzentenoe/httpclient-call-go)](https://goreportcard.com/report/github.com/pzentenoe/httpclient-call-go)
 ![License](https://img.shields.io/github/license/pzentenoe/httpclient-call-go.svg)
 ![GitHub issues](https://img.shields.io/github/issues/pzentenoe/httpclient-call-go.svg)
-![Quality Gate](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=alert_status&token=sqb_28f943efa72bc60b8e1c5447065df406ec45ef08)
-![Coverage](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=coverage&token=sqb_28f943efa72bc60b8e1c5447065df406ec45ef08)
-![Bugs](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=bugs&token=sqb_28f943efa72bc60b8e1c5447065df406ec45ef08)
+![Quality Gate](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=alert_status&token=sqb_f70b1c195a96e42d172015b2bc76c8b183cf722a)
+![Coverage](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=coverage&token=sqb_f70b1c195a96e42d172015b2bc76c8b183cf722a)
+![Bugs](https://sonarqube.vikingcode.cl/api/project_badges/measure?project=httpclient-call-go&metric=bugs&token=sqb_f70b1c195a96e42d172015b2bc76c8b183cf722a)
 
 ### Buy Me a Coffee
 
