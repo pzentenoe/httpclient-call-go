@@ -63,7 +63,7 @@ jobs:
           GO111MODULE: on
 
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v2.1.0
+        uses: sonarsource/sonarqube-scan-action@v2.3.0
         env:
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           SONAR_HOST_URL: ${{ vars.SONARQUBE_URL }}
