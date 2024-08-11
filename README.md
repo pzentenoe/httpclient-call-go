@@ -5,6 +5,7 @@
 The `httpclient-call-go` library simplifies making HTTP calls to various API services efficiently and straightforwardly.
 It is designed to seamlessly integrate into any Go project requiring HTTP API interactions.
 
+[![codecov](https://codecov.io/github/pzentenoe/httpclient-call-go/graph/badge.svg?token=3W164MZ18S)](https://codecov.io/github/pzentenoe/httpclient-call-go)
 ![CI](https://github.com/pzentenoe/httpclient-call-go/actions/workflows/actions.yml/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/pzentenoe/httpclient-call-go)](https://goreportcard.com/report/github.com/pzentenoe/httpclient-call-go)
 ![License](https://img.shields.io/github/license/pzentenoe/httpclient-call-go.svg)
